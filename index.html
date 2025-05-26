@@ -26,12 +26,23 @@
       background-color: #000;
       color: #fff;
       padding: 10px;
-      margin-top: 12px;
+      margin-bottom: 12px;
       word-wrap: break-word;
       width: 180px;
       text-align: center;
       font-family: monospace;
       border-radius: 4px;
+    }
+
+    .download-button {
+      margin-top: 8px;
+      background-color: #000;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
     }
 
     #manual-refresh {
@@ -68,28 +79,28 @@
 
   <div class="qr-display">
     <div id="qr-block-1">
-      <div id="qr-display-1"></div>
       <pre id="qr-text-1"></pre>
+      <div id="qr-display-1"></div><button class="download-button" id="qr-download-1">Download</button>
     </div>
     <div id="qr-block-2">
-      <div id="qr-display-2"></div>
       <pre id="qr-text-2"></pre>
+      <div id="qr-display-2"></div><button class="download-button" id="qr-download-2">Download</button>
     </div>
     <div id="qr-block-3">
-      <div id="qr-display-3"></div>
       <pre id="qr-text-3"></pre>
+      <div id="qr-display-3"></div><button class="download-button" id="qr-download-3">Download</button>
     </div>
     <div id="qr-block-4">
-      <div id="qr-display-4"></div>
       <pre id="qr-text-4"></pre>
+      <div id="qr-display-4"></div><button class="download-button" id="qr-download-4">Download</button>
     </div>
     <div id="qr-block-5">
-      <div id="qr-display-5"></div>
       <pre id="qr-text-5"></pre>
+      <div id="qr-display-5"></div><button class="download-button" id="qr-download-5">Download</button>
     </div>
     <div id="qr-block-6">
-      <div id="qr-display-6"></div>
       <pre id="qr-text-6"></pre>
+      <div id="qr-display-6"></div><button class="download-button" id="qr-download-6">Download</button>
     </div>
   </div>
 
@@ -120,11 +131,15 @@
       defaultFriendCodes.forEach((code, index) => {
         const qrContainer = document.getElementById(`qr-display-${index + 1}`);
         const textContainer = document.getElementById(`qr-text-${index + 1}`);
+        const downloadButton = document.getElementById(`qr-download-${index + 1}`);
         qrContainer.innerHTML = '';
 
         const qrData = '4,' + code + DblTimestampHelper.createDblTimestamp();
 
-        new QRCode(qrContainer, {
+        const tempDiv = document.createElement('div');
+        qrContainer.appendChild(tempDiv);
+
+        new QRCode(tempDiv, {
           text: qrData,
           width: 180,
           height: 180,
@@ -134,6 +149,21 @@
         });
 
         textContainer.textContent = qrData;
+
+        setTimeout(() => {
+          const canvas = tempDiv.querySelector('canvas');
+          if (canvas && downloadButton) {
+            const imgData = canvas.toDataURL("image/png");
+            downloadButton.onclick = () => {
+              const link = document.createElement('a');
+              link.href = imgData;
+              link.download = `qr-${index + 1}.png`;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            };
+          }
+        }, 100);
       });
     }
 
