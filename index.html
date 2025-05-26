@@ -1,78 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="https://glitch.com/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>slightly annoying qr shenron generator</title>
-    <link rel="stylesheet" href="style.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  </head>
-  <body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QR Shenron Generator</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    .qr-display {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px 20px;
+      justify-items: center;
+      padding: 20px;
+    }
 
-    <!-- this is the start of content -->
-    <form id="dbl-qr" method="POST" action="/" enctype="multipart/form-data">
-      <fieldset class="qr-method">
-        <legend>
-          (NEW) QR generation method
-        </legend>
+    .qr-display>div {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-        <input id="qr-auto" type="radio" name="qr-method" value="auto" checked />
-        <label for='qr-auto'>
-          Auto : No file needed. Might fail in some circumstances, try manual if you have an expired code message.
-        </label>
-        <br />
+    pre {
+      background-color: #000;
+      color: #fff;
+      padding: 10px;
+      margin-top: 12px;
+      word-wrap: break-word;
+      width: 180px;
+      text-align: center;
+      font-family: monospace;
+      border-radius: 4px;
+    }
 
-        <input id="qr-manual" type="radio" name="qr-method" value="manual" />
-        <label for='qr-manual'>
-          Manual : Upload a recently generated code from your account (or otherwise). Use if auto fails.
-        </label>
-        <br /><br />
+    #manual-refresh {
+      display: block;
+      margin: 20px auto;
+    }
 
-        <label for="qrcode">Upload a recent QRcode generated with your own account :</label>
-        <input type="file" id="qrcode" name="qrcode" />
-        <input type="hidden" id="qrcode_b64" />
-      </fieldset>
+    h1 {
+      text-align: center;
+    }
+  </style>
+</head>
 
+<body>
+  <h1>QR Shenron Generator</h1>
 
-      <fieldset>
-        <legend>
-          Enter up to three friend codes to generate QR codes with.
-        </legend>
+  <button id="manual-refresh">Manual Refresh</button>
 
-        <input type="text" minlength="8" maxlength="8" placeholder="Friend 1 ..." autocomplete="dbl-qr-1" name="dbl-qr-1" />
-        <input type="text" minlength="8" maxlength="8" placeholder="Friend 2 ..." autocomplete="dbl-qr-1" name="dbl-qr-2" />
-        <input type="text" minlength="8" maxlength="8" placeholder="Friend 3 ..." autocomplete="dbl-qr-1" name="dbl-qr-3" />
-      </fieldset>
-
-      <input type="submit" value="Display codes" />
-    </form>
-
-    <div class="qr-display">
+  <div class="qr-display">
+    <div id="qr-block-1">
       <div id="qr-display-1"></div>
-      <div id="qr-display-2"></div>
-      <div id="qr-display-3"></div>
+      <pre id="qr-text-1"></pre>
     </div>
+    <div id="qr-block-2">
+      <div id="qr-display-2"></div>
+      <pre id="qr-text-2"></pre>
+    </div>
+    <div id="qr-block-3">
+      <div id="qr-display-3"></div>
+      <pre id="qr-text-3"></pre>
+    </div>
+    <div id="qr-block-4">
+      <div id="qr-display-4"></div>
+      <pre id="qr-text-4"></pre>
+    </div>
+    <div id="qr-block-5">
+      <div id="qr-display-5"></div>
+      <pre id="qr-text-5"></pre>
+    </div>
+    <div id="qr-block-6">
+      <div id="qr-display-6"></div>
+      <pre id="qr-text-6"></pre>
+    </div>
+  </div>
 
-    <script type="text/javascript" src="libraries/jsqrcode/grid.js"></script>
-    <script type="text/javascript" src="libraries/jsqrcode/version.js"></script>
-    <script type="text/javascript" src="libraries/jsqrcode/detector.js"></script>
-    <script type="text/javascript" src="libraries/jsqrcode/formatinf.js"></script>
-    <script type="text/javascript" src="libraries/jsqrcode/errorlevel.js"></script>
-    <script type="text/javascript" src="libraries/jsqrcode/bitmat.js"></script>
-    <script type="text/javascript" src="libraries/jsqrcode/datablock.js"></script>
-    <script type="text/javascript" src="libraries/jsqrcode/bmparser.js"></script>
-    <script type="text/javascript" src="libraries/jsqrcode/datamask.js"></script>
-    <script type="text/javascript" src="libraries/jsqrcode/rsdecoder.js"></script>
-    <script type="text/javascript" src="libraries/jsqrcode/gf256poly.js"></script>
-    <script type="text/javascript" src="libraries/jsqrcode/gf256.js"></script>
-    <script type="text/javascript" src="libraries/jsqrcode/decoder.js"></script>
-    <script type="text/javascript" src="libraries/jsqrcode/qrcode.js"></script>
-    <script type="text/javascript" src="libraries/jsqrcode/findpat.js"></script>
-    <script type="text/javascript" src="libraries/jsqrcode/alignpat.js"></script>
-    <script type="text/javascript" src="libraries/jsqrcode/databr.js"></script>
+  <script>
+    class DblTimestampHelper {
+      static timestampEncoding = ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'M', 'N', 'P', 'Q', 'R', 'S', 'T'];
 
-    <script type="text/javascript" src="qr.js"></script>
-  </body>
+      static createDblTimestamp() {
+        const creationDate = Date.now().toString(16);
+        return [...creationDate]
+          .map(char => this.timestampEncoding[parseInt(char, 16)])
+          .join('');
+      }
+    }
+    // update to your friend codes
+    const defaultFriendCodes = [
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6'
+    ];
+
+    let intervalId = null;
+
+    function generateAllQRCodes() {
+      defaultFriendCodes.forEach((code, index) => {
+        const qrContainer = document.getElementById(`qr-display-${index + 1}`);
+        const textContainer = document.getElementById(`qr-text-${index + 1}`);
+        qrContainer.innerHTML = '';
+
+        const qrData = '4,' + code + DblTimestampHelper.createDblTimestamp();
+
+        new QRCode(qrContainer, {
+          text: qrData,
+          width: 180,
+          height: 180,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+
+        textContainer.textContent = qrData;
+      });
+    }
+
+    function startAutoRefresh() {
+      if (intervalId) clearInterval(intervalId);
+      intervalId = setInterval(generateAllQRCodes, 10000);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      generateAllQRCodes();
+      startAutoRefresh();
+
+      document.getElementById('manual-refresh').addEventListener('click', () => {
+        generateAllQRCodes();
+        startAutoRefresh();
+      });
+    });
+  </script>
+</body>
+
 </html>
