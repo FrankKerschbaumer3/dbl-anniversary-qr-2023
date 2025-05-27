@@ -115,7 +115,7 @@
     #manual-refresh,
     #copy-all,
     #import-codes,
-    #use-default {
+    #use-default-friend-codes {
       margin-top: 8px;
       background-color: var(--button-bg);
       color: var(--button-text);
@@ -173,7 +173,7 @@
   <div id="top-buttons">
     <button id="copy-all">Copy All</button>
     <button id="import-codes">Import</button>
-    <button id="use-default">Use Default</button>
+    <button id="use-default-friend-codes">Use Default Friend Codes</button>
     <button id="manual-refresh">Manual Refresh</button>
   </div>
   <form id="friend-code-form"></form>
@@ -224,7 +224,7 @@
         const qrContainer = document.createElement('div');
         const downloadButton = document.createElement('button');
         downloadButton.className = 'download-button';
-        downloadButton.textContent = 'Download';
+        downloadButton.textContent = 'Download QR Code';
 
         const qrData = `4,${code}${DblTimestampHelper.createDblTimestamp()}`;
         textContainer.textContent = qrData;
@@ -308,7 +308,7 @@
       });
 
       document.getElementById('copy-all').addEventListener('click', () => {
-        const codes = getFriendCodes().join('\n');
+        const codes = getFriendCodes().join(',');
         navigator.clipboard.writeText(codes);
         showToast('Friend codes copied!');
       });
@@ -332,7 +332,7 @@
         }
       });
 
-      document.getElementById('use-default').addEventListener('click', () => {
+      document.getElementById('use-default-friend-codes').addEventListener('click', () => {
         const inputs = document.querySelectorAll('#friend-code-form input');
         defaultFriendCodes.forEach((code, idx) => {
           if (inputs[idx]) inputs[idx].value = code;
